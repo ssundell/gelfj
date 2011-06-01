@@ -28,10 +28,13 @@ public class GelfAppender extends AppenderSkeleton {
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
+    private boolean addExtendedInformation;
     private Map<String, String> fields;
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
     private static final String ORIGIN_HOST_KEY = "originHost";
+    private static final String LOGGER_NAME = "logger";
+    private static final String LOGGER_NDC = "loggerNdc";
 
     public GelfAppender() {
         super();
@@ -50,7 +53,7 @@ public class GelfAppender extends AppenderSkeleton {
     }
 
     public void setAdditionalFields(String additionalFields) {
-         fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
+        fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
 
     public int getGraylogPort() {
@@ -91,6 +94,14 @@ public class GelfAppender extends AppenderSkeleton {
 
     public void setOriginHost(String originHost) {
         this.originHost = originHost;
+    }
+
+    public boolean isAddExtendedInformation() {
+        return addExtendedInformation;
+    }
+
+    public void setAddExtendedInformation(boolean addExtendedInformation) {
+        this.addExtendedInformation = addExtendedInformation;
     }
 
     @Override
@@ -146,10 +157,18 @@ public class GelfAppender extends AppenderSkeleton {
                 fields.remove(ORIGIN_HOST_KEY);
             }
 
-            for(String key : fields.keySet()) {
-                gelfMessage.addField(key, fields.get(key));
+            for (Map.Entry<String, String> entry : fields.entrySet()) {
+                gelfMessage.addField(entry.getKey(), entry.getValue());
             }
         }
+
+        if (addExtendedInformation) {
+            gelfMessage.addField(LOGGER_NAME, event.getLoggerName());
+            if (event.getNDC() != null) {
+                gelfMessage.addField(LOGGER_NDC, event.getNDC());
+            }
+        }
+
         getGelfSender().sendMessage(gelfMessage);
     }
 
@@ -157,7 +176,7 @@ public class GelfAppender extends AppenderSkeleton {
         return gelfSender;
     }
 
-    private long getTimestamp(LoggingEvent event)  {
+    private long getTimestamp(LoggingEvent event) {
         return Log4jVersionChecker.getTimeStamp(event);
     }
 
