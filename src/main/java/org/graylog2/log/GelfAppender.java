@@ -128,7 +128,12 @@ public class GelfAppender extends AppenderSkeleton {
         String lineNumber = locationInformation.getLineNumber();
 
         String renderedMessage = event.getRenderedMessage();
-        String shortMessage = "";
+        String shortMessage;
+
+        if(renderedMessage == null) {
+            renderedMessage = "";
+        }
+
         if (renderedMessage.length() > MAX_SHORT_MESSAGE_LENGTH) {
             shortMessage = renderedMessage.substring(0, MAX_SHORT_MESSAGE_LENGTH - 1);
         } else {
@@ -141,7 +146,8 @@ public class GelfAppender extends AppenderSkeleton {
                 renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
             }
         }
-        GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp, level.getSyslogEquivalent() + "", lineNumber, file);
+        GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp,
+                String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
 
         if (getOriginHost() != null) {
             gelfMessage.setHost(getOriginHost());
