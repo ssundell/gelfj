@@ -6,8 +6,6 @@ It's very simple GELF implementation in pure Java with the log4j appender. It su
 How to use GELFJ
 ----------------
 
-Grab latest JAR from the [downloads section](https://github.com/t0xa/gelfj/downloads) and drop it into your classpath.
-
 Examples
 --------
 
@@ -40,9 +38,7 @@ To use GELF Facility as appender in Log4J (XML format):
         <param name="originHost" value="my.machine.example.com"/>
         <param name="facility" value="gelf-java"/>
         <param name="Threshold" value="INFO"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d |%t|%c{2}| %-5p - %m%n"/>
-        </layout>
+        <param name="addExtendedInformation" value="true"/>
     </appender>
 
 and then add it as a one of appenders:
@@ -64,6 +60,8 @@ Or, in the log4j.properties format:
 
     # Send all INFO logs to graylog2
     log4j.rootLogger=INFO, graylog2
+
+Flag "addExtendedInformation" adds log4j specific information such as logger name and NDC into separate fields in GELF message. 
 
   
 What is GELF
